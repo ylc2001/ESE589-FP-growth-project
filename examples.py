@@ -8,6 +8,8 @@ This script shows:
 4. Working with different parameters
 """
 
+import random
+import time
 from fp_growth import mine_frequent_itemsets
 
 
@@ -106,7 +108,6 @@ def example_3_parameter_comparison():
     print("="*70)
     
     # Generate a larger synthetic dataset
-    import random
     random.seed(42)
     
     items = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
@@ -134,7 +135,6 @@ def example_3_parameter_comparison():
     print(f"{'Support':<10} {'Min Count':<12} {'Itemsets Found':<15} {'Execution Time':<15}")
     print("-" * 60)
     
-    import time
     for min_support in support_values:
         start = time.time()
         result = mine_frequent_itemsets(transactions, min_support=min_support)
