@@ -87,15 +87,18 @@ This runs 5 test suites:
 Run comprehensive experiments on the Online Retail dataset:
 
 ```bash
-python benchmark.py
+python run_benchmark.py
 ```
 
 This will:
-- Download and preprocess the Online Retail dataset
+- Attempt to download and preprocess the Online Retail dataset
+- If download fails (no internet), automatically use synthetic retail data
 - Run support variation experiments (0.01 to 0.15)
 - Run scalability experiments (500 to 5000 transactions)
 - Generate association rules
 - Create visualizations and save results
+
+**Note:** The script automatically falls back to synthetic retail data if the Online Retail dataset cannot be downloaded. The synthetic data mimics real retail transactions with realistic product names and shopping patterns.
 
 Results are saved to the `results/` directory:
 - `support_variation_results.json`: Results for different support thresholds
@@ -129,7 +132,9 @@ ESE589-FP-growth-project/
 ├── fp_growth.py          # Core FP-growth algorithm implementation
 ├── validate.py           # Validation test suite
 ├── preprocess.py         # Data preprocessing for Online Retail dataset
-├── benchmark.py          # Benchmark experiments and analysis
+├── sample_data.py        # Synthetic retail data generator
+├── benchmark.py          # Benchmark experiment functions
+├── run_benchmark.py      # Main benchmark script with data fallback
 ├── requirements.txt      # Python package dependencies
 ├── README.md            # This file
 ├── data/                # Downloaded datasets (created automatically)
