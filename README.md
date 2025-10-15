@@ -67,6 +67,18 @@ print(f"Found {len(result['frequent_itemsets'])} frequent itemsets")
 print(f"Found {len(result['rules'])} association rules")
 ```
 
+Or run the comprehensive examples script:
+
+```bash
+python examples.py
+```
+
+This demonstrates:
+- Basic usage with small datasets
+- Association rule generation
+- Effect of different parameters
+- Real-world e-commerce scenarios
+
 ### 2. Run Validation Tests
 
 Validate the implementation with comprehensive test cases:
@@ -131,6 +143,7 @@ print(f"Found {len(item_stats)} unique items")
 ESE589-FP-growth-project/
 ├── fp_growth.py          # Core FP-growth algorithm implementation
 ├── validate.py           # Validation test suite
+├── examples.py           # Comprehensive usage examples
 ├── preprocess.py         # Data preprocessing for Online Retail dataset
 ├── sample_data.py        # Synthetic retail data generator
 ├── benchmark.py          # Benchmark experiment functions
