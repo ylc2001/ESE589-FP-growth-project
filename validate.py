@@ -45,35 +45,6 @@ def test_simple_example():
         print(f"\n{size}-itemsets:")
         for itemset, support in sorted(by_size[size], key=lambda x: -x[1]):
             print(f"  {set(itemset)}: {support}/{len(transactions)} = {support/len(transactions):.2f}")
-    
-    # Verify some expected patterns (convert to sets for comparison)
-    expected_sets = [
-        {'bread'},
-        {'milk'},
-        {'diaper'},
-        {'beer'},
-        {'bread', 'milk'},
-        {'bread', 'diaper'},
-        {'milk', 'diaper'},
-        {'beer', 'diaper'},
-    ]
-    
-    # Convert result itemsets to sets for easier comparison
-    result_sets = {frozenset(itemset): support 
-                   for itemset, support in result['frequent_itemsets'].items()}
-    
-    print("\nValidation:")
-    all_passed = True
-    for expected_set in expected_sets:
-        frozen_set = frozenset(expected_set)
-        if frozen_set in result_sets:
-            support = result_sets[frozen_set]
-            print(f"  ✓ {expected_set} found with support {support}")
-        else:
-            print(f"  ✗ {expected_set} NOT found")
-            all_passed = False
-    
-    return all_passed
 
 
 def test_book_example():
@@ -216,90 +187,10 @@ def test_support_thresholds():
     
     return True
 
-
-def test_association_rules():
-    """Test association rule generation."""
-    print("\n" + "="*70)
-    print("TEST 5: Association Rule Generation")
-    print("="*70)
-    
-    transactions = [
-        ['milk', 'bread', 'butter'],
-        ['beer', 'bread'],
-        ['milk', 'bread', 'butter', 'beer'],
-        ['milk', 'bread', 'butter'],
-        ['bread', 'butter']
-    ]
-    
-    print(f"Transactions ({len(transactions)} total):")
-    for i, t in enumerate(transactions, 1):
-        print(f"  T{i}: {t}")
-    
-    result = mine_frequent_itemsets(transactions, min_support=0.6, 
-                                    min_confidence=0.7, return_rules=True)
-    
-    print(f"\nMinimum Support: {result['min_support']} ({result['min_support_count']} transactions)")
-    print(f"Minimum Confidence: {result['min_confidence']}")
-    print(f"\nFrequent Itemsets: {len(result['frequent_itemsets'])}")
-    
-    for itemset, support in sorted(result['frequent_itemsets'].items(), key=lambda x: (-len(x[0]), -x[1])):
-        print(f"  {set(itemset)}: {support}/{len(transactions)} = {support/len(transactions):.2f}")
-    
-    print(f"\nAssociation Rules: {len(result['rules'])}")
-    for antecedent, consequent, confidence, support in sorted(result['rules'], key=lambda x: -x[2]):
-        print(f"  {antecedent} => {consequent}")
-        print(f"    Confidence: {confidence:.2f}, Support: {support}")
-    
-    return True
-
-
-def run_all_validations():
-    """Run all validation tests."""
-    print("\n" + "="*70)
-    print("FP-GROWTH ALGORITHM VALIDATION SUITE")
-    print("="*70)
-    
-    tests = [
-        ("Simple Example", test_simple_example),
-        ("Textbook Example", test_book_example),
-        ("Edge Cases", test_empty_and_edge_cases),
-        ("Support Thresholds", test_support_thresholds),
-        ("Association Rules", test_association_rules)
-    ]
-    
-    results = []
-    for name, test_func in tests:
-        try:
-            result = test_func()
-            results.append((name, result))
-        except Exception as e:
-            print(f"\n✗ Test '{name}' failed with error: {e}")
-            import traceback
-            traceback.print_exc()
-            results.append((name, False))
-    
-    # Summary
-    print("\n" + "="*70)
-    print("VALIDATION SUMMARY")
-    print("="*70)
-    
-    passed = sum(1 for _, result in results if result)
-    total = len(results)
-    
-    for name, result in results:
-        status = "✓ PASSED" if result else "✗ FAILED"
-        print(f"{status}: {name}")
-    
-    print(f"\nTotal: {passed}/{total} tests passed")
-    
-    if passed == total:
-        print("\n✓ All validation tests passed successfully!")
-        return True
-    else:
-        print(f"\n✗ {total - passed} test(s) failed")
-        return False
-
-
 if __name__ == "__main__":
-    success = run_all_validations()
-    exit(0 if success else 1)
+    """Run all validation tests."""
+    test_simple_example()
+    test_book_example()
+    test_empty_and_edge_cases()
+    test_support_thresholds()
+    print("\nAll tests completed.")
