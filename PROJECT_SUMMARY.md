@@ -107,13 +107,11 @@ Validates: Basic itemset mining, support counting
 
 ```
 ESE589-FP-growth-project/
-├── fp_growth.py          # Core FP-growth implementation (234 lines)
+├── fp_growth.py          # Core FP-growth implementation (245 lines)
 ├── validate.py           # Validation test suite (195 lines)
-├── examples.py           # Usage examples (221 lines)
-├── preprocess.py         # Online Retail preprocessing (280 lines)
-├── sample_data.py        # Synthetic data generator (194 lines)
-├── benchmark.py          # Benchmark functions (452 lines)
-├── run_benchmark.py      # Main benchmark script (108 lines)
+├── preprocess.py         # Online Retail preprocessing (275 lines)
+├── benchmark.py          # Benchmark functions (438 lines)
+├── run_benchmark.py      # Main benchmark script (110 lines)
 ├── requirements.txt      # Dependencies (4 packages)
 ├── README.md            # Comprehensive documentation
 ├── .gitignore           # Git ignore rules
@@ -126,7 +124,7 @@ ESE589-FP-growth-project/
     └── scalability_results.json
 ```
 
-**Total Lines of Code:** ~1,684 lines (excluding comments/blanks)
+**Total Lines of Code:** ~1,263 lines
 
 ## Key Features
 

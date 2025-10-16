@@ -62,17 +62,6 @@ result = mine_frequent_itemsets(
 print(f"Found {len(result['frequent_itemsets'])} frequent itemsets")
 ```
 
-Or run the comprehensive examples script:
-
-```bash
-python examples.py
-```
-
-This demonstrates:
-- Basic usage with small datasets
-- Effect of different parameters
-- Real-world e-commerce scenarios
-
 ### 2. Run Validation Tests
 
 Validate the implementation with comprehensive test cases:
@@ -134,9 +123,7 @@ print(f"Found {len(item_stats)} unique items")
 ESE589-FP-growth-project/
 ├── fp_growth.py          # Core FP-growth algorithm implementation
 ├── validate.py           # Validation test suite
-├── examples.py           # Comprehensive usage examples
 ├── preprocess.py         # Data preprocessing for Online Retail dataset
-├── sample_data.py        # Synthetic retail data generator
 ├── benchmark.py          # Benchmark experiment functions
 ├── run_benchmark.py      # Main benchmark script with data fallback
 ├── requirements.txt      # Python package dependencies
