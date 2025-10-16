@@ -49,7 +49,7 @@ def get_data(sample_size=5000):
 
 
 def main():    
-    print("\n[1/4] Loading transaction data...")
+    print("\n[1/3] Loading transaction data...")
     transactions, trans_df, item_stats, data_source = get_data(sample_size=5000)
     
     print(f"\nData source: {data_source}")
@@ -57,24 +57,15 @@ def main():
     print(f"Unique items: {len(item_stats)}")
     
     # Experiment 1: Support variation
-    print("\n[2/4] Running support variation experiments...")
+    print("\n[2/3] Running support variation experiments...")
     support_values = [0.01, 0.02, 0.05, 0.1, 0.15]
     support_results = run_support_variation_experiments(transactions, support_values)
     
     # Experiment 2: Scalability
-    print("\n[3/4] Running scalability experiments...")
+    print("\n[3/3] Running scalability experiments...")
     sizes = [500, 1000, 2000, 3000, 5000]
     scalability_results = run_scalability_experiments(
         transactions, sizes, min_support=0.05
-    )
-    
-    # Experiment 3: Association rules (use smaller sample)
-    print("\n[4/4] Running association rule experiment...")
-    rule_result = run_experiment(
-        transactions[:1000],
-        min_support=0.05,
-        min_confidence=0.6,
-        experiment_name="Association Rules Experiment"
     )
     
     # Save results
@@ -84,7 +75,6 @@ def main():
     
     save_results(support_results, filename='support_variation_results.json')
     save_results(scalability_results, filename='scalability_results.json')
-    save_results([rule_result], filename='association_rules_results.json')
     
     # Create visualizations
     print("\nCreating visualizations...")
@@ -93,7 +83,7 @@ def main():
     
     # Generate summary report
     print("\nGenerating summary report...")
-    generate_summary_report(support_results, scalability_results, rule_result)
+    generate_summary_report(support_results, scalability_results)
     
     print("\n" + "="*70)
     print("✓ BENCHMARK COMPLETED SUCCESSFULLY!")
@@ -101,7 +91,6 @@ def main():
     print("\nResults saved to 'results/' directory:")
     print("  - support_variation_results.json")
     print("  - scalability_results.json")
-    print("  - association_rules_results.json")
     print("  - support_variation.png")
     print("  - scalability.png")
     print("  - BENCHMARK_REPORT.md")

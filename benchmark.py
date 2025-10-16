@@ -29,7 +29,6 @@ def format_time(seconds: float) -> str:
 
 def run_experiment(transactions: List[List[str]], 
                    min_support: float,
-                   min_confidence: float = None,
                    experiment_name: str = "Experiment") -> Dict:
     """
     Run a single FP-growth experiment and collect results.
@@ -37,7 +36,6 @@ def run_experiment(transactions: List[List[str]],
     Args:
         transactions: List of transactions
         min_support: Minimum support threshold
-        min_confidence: Minimum confidence for association rules
         experiment_name: Name of the experiment
         
     Returns:
@@ -48,16 +46,12 @@ def run_experiment(transactions: List[List[str]],
     print(f"{'='*70}")
     print(f"Transactions: {len(transactions)}")
     print(f"Min Support: {min_support}")
-    if min_confidence:
-        print(f"Min Confidence: {min_confidence}")
     
     # Run FP-growth
     start_time = time.time()
     result = mine_frequent_itemsets(
         transactions, 
-        min_support=min_support,
-        min_confidence=min_confidence if min_confidence else 0.5,
-        return_rules=min_confidence is not None
+        min_support=min_support
     )
     end_time = time.time()
     
@@ -80,39 +74,16 @@ def run_experiment(transactions: List[List[str]],
     for size in sorted(by_size.keys()):
         print(f"  {size}-itemsets: {by_size[size]}")
     
-    if 'rules' in result:
-        print(f"\nAssociation Rules: {len(result['rules'])}")
-        
-        # Top 10 rules by confidence
-        top_rules = sorted(result['rules'], key=lambda x: -x[2])[:10]
-        print("\nTop 10 Rules by Confidence:")
-        for i, (ante, cons, conf, supp) in enumerate(top_rules, 1):
-            print(f"  {i}. {ante} => {cons}")
-            print(f"     Confidence: {conf:.3f}, Support: {supp}")
-    
     # Compile results
     experiment_result = {
         'name': experiment_name,
         'num_transactions': len(transactions),
         'min_support': min_support,
         'min_support_count': result['min_support_count'],
-        'min_confidence': min_confidence,
         'num_frequent_itemsets': len(frequent_itemsets),
         'itemsets_by_size': by_size,
         'execution_time': execution_time,
     }
-    
-    if 'rules' in result:
-        experiment_result['num_rules'] = len(result['rules'])
-        experiment_result['top_rules'] = [
-            {
-                'antecedent': list(ante),
-                'consequent': list(cons),
-                'confidence': float(conf),
-                'support': int(supp)
-            }
-            for ante, cons, conf, supp in top_rules
-        ]
     
     # Top frequent itemsets
     top_itemsets = sorted(
@@ -259,19 +230,14 @@ def create_visualizations(results: List[Dict], output_dir: str = 'results'):
         ax3.legend()
         ax3.grid(True, alpha=0.3, axis='y')
         
-        # Plot 4: Association rules count
+        # Plot 4: Min support count
         ax4 = axes[1, 1]
-        rules_counts = [r.get('num_rules', 0) for r in results]
-        if any(rules_counts):
-            ax4.plot(support_values, rules_counts, 
-                    marker='^', color='green', linewidth=2, markersize=8)
-            ax4.set_xlabel('Minimum Support', fontsize=12)
-            ax4.set_ylabel('Number of Association Rules', fontsize=12)
-            ax4.set_title('Association Rules vs Support')
-            ax4.grid(True, alpha=0.3)
-        else:
-            ax4.text(0.5, 0.5, 'No rules generated', 
-                    ha='center', va='center', transform=ax4.transAxes)
+        ax4.plot(support_values, [r['min_support_count'] for r in results], 
+                marker='^', color='green', linewidth=2, markersize=8)
+        ax4.set_xlabel('Minimum Support', fontsize=12)
+        ax4.set_ylabel('Minimum Support Count', fontsize=12)
+        ax4.set_title('Minimum Support Count vs Support')
+        ax4.grid(True, alpha=0.3)
         
         plt.tight_layout()
         plt.savefig(os.path.join(output_dir, 'support_variation.png'), dpi=300, bbox_inches='tight')
@@ -369,31 +335,22 @@ def run_comprehensive_benchmark():
     print("="*70)
     
     # Load and preprocess data
-    print("\n[1/4] Loading and preprocessing Online Retail dataset...")
+    print("\n[1/3] Loading and preprocessing Online Retail dataset...")
     transactions, trans_df, item_stats = preprocess_online_retail(
         sample_size=5000,  # Use 5000 transactions for benchmarking
         min_items_per_transaction=2
     )
     
     # Experiment 1: Support variation
-    print("\n[2/4] Running support variation experiments...")
+    print("\n[2/3] Running support variation experiments...")
     support_values = [0.01, 0.02, 0.05, 0.1, 0.15]
     support_results = run_support_variation_experiments(transactions, support_values)
     
     # Experiment 2: Scalability
-    print("\n[3/4] Running scalability experiments...")
+    print("\n[3/3] Running scalability experiments...")
     sizes = [500, 1000, 2000, 3000, 5000]
     scalability_results = run_scalability_experiments(
         transactions, sizes, min_support=0.05
-    )
-    
-    # Experiment 3: Association rules
-    print("\n[4/4] Running association rule experiment...")
-    rule_result = run_experiment(
-        transactions[:1000],  # Use smaller sample for rules
-        min_support=0.05,
-        min_confidence=0.6,
-        experiment_name="Association Rules Experiment"
     )
     
     # Save results
@@ -403,14 +360,13 @@ def run_comprehensive_benchmark():
     
     save_results(support_results, filename='support_variation_results.json')
     save_results(scalability_results, filename='scalability_results.json')
-    save_results([rule_result], filename='association_rules_results.json')
     
     # Create visualizations
     create_visualizations(support_results)
     create_visualizations(scalability_results)
     
     # Generate summary report
-    generate_summary_report(support_results, scalability_results, rule_result)
+    generate_summary_report(support_results, scalability_results)
     
     print("\n" + "="*70)
     print("✓ Benchmark completed successfully!")
@@ -419,7 +375,6 @@ def run_comprehensive_benchmark():
 
 def generate_summary_report(support_results: List[Dict], 
                             scalability_results: List[Dict],
-                            rule_result: Dict,
                             output_dir: str = 'results'):
     """Generate a summary report of all experiments."""
     os.makedirs(output_dir, exist_ok=True)
@@ -459,25 +414,13 @@ def generate_summary_report(support_results: List[Dict],
         f.write("- Maintains consistent performance across different scales\n")
         f.write("- Efficient memory usage with FP-tree structure\n\n")
         
-        f.write("## 3. Association Rules Experiment\n\n")
-        f.write(f"**Configuration:**\n")
-        f.write(f"- Transactions: {rule_result['num_transactions']}\n")
-        f.write(f"- Min Support: {rule_result['min_support']}\n")
-        f.write(f"- Min Confidence: {rule_result['min_confidence']}\n")
-        f.write(f"- Frequent Itemsets: {rule_result['num_frequent_itemsets']}\n")
-        f.write(f"- Association Rules: {rule_result.get('num_rules', 0)}\n\n")
+        # Find the experiment with the most itemsets for display
+        best_result = max(support_results, key=lambda x: x['num_frequent_itemsets'])
         
-        if 'top_rules' in rule_result and rule_result['top_rules']:
-            f.write("### Top Association Rules:\n\n")
-            for i, rule in enumerate(rule_result['top_rules'][:10], 1):
-                f.write(f"{i}. {set(rule['antecedent'])} => {set(rule['consequent'])}\n")
-                f.write(f"   - Confidence: {rule['confidence']:.3f}\n")
-                f.write(f"   - Support: {rule['support']}\n\n")
-        
-        f.write("## 4. Top Frequent Itemsets\n\n")
-        if 'top_itemsets' in rule_result:
+        f.write("## 3. Top Frequent Itemsets\n\n")
+        if 'top_itemsets' in best_result:
             f.write("Most frequent itemsets found:\n\n")
-            for i, item in enumerate(rule_result['top_itemsets'][:15], 1):
+            for i, item in enumerate(best_result['top_itemsets'][:15], 1):
                 f.write(f"{i}. {set(item['itemset'])}\n")
                 f.write(f"   - Support: {item['support']} ({item['support_pct']:.1f}%)\n\n")
         
@@ -485,8 +428,7 @@ def generate_summary_report(support_results: List[Dict],
         f.write("The FP-growth implementation has been validated through:\n")
         f.write("1. Small illustrative examples with known expected results\n")
         f.write("2. Large-scale benchmarks on real-world retail data\n")
-        f.write("3. Performance analysis across different parameters\n")
-        f.write("4. Successful association rule generation\n\n")
+        f.write("3. Performance analysis across different parameters\n\n")
         f.write("The implementation demonstrates correctness, efficiency, and scalability.\n")
     
     print(f"✓ Summary report saved to {report_path}")
