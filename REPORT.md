@@ -46,8 +46,7 @@
 - Tracks FP-tree metrics: nodes, depth, total trees created
 - Optional tracking via `track_memory` parameter
 
-**Time Complexity**: O(n × m) where n = transactions, m = avg items/transaction  
-**Space Complexity**: O(n × m) for compressed FP-tree
+**Complexity**: O(n × m) time where n = transactions, m = avg items/transaction; space is much smaller than input due to FP-tree compression via prefix sharing
 
 ## 3. Small Examples for Validation
 
