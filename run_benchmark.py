@@ -27,11 +27,6 @@ def get_data(sample_size=5000):
     Returns:
         Tuple of (transactions, transactions_df, item_stats)
     """
-    print("\n" + "="*70)
-    print("LOADING DATA")
-    print("="*70)
-    
-    # Try to load real Online Retail data
     try:
         print("\nAttempting to download Online Retail dataset...")
         from preprocess import preprocess_online_retail
@@ -50,7 +45,7 @@ def get_data(sample_size=5000):
 
 def main():    
     print("\n[1/3] Loading transaction data...")
-    transactions, trans_df, item_stats, data_source = get_data(sample_size=15000)
+    transactions, trans_df, item_stats, data_source = get_data(sample_size=10000)
     
     print(f"\nData source: {data_source}")
     print(f"Transactions: {len(transactions)}")
@@ -63,7 +58,7 @@ def main():
     
     # Experiment 2: Scalability
     print("\n[3/3] Running scalability experiments...")
-    sizes = [500, 1000, 2000, 3000, 5000, 8000, 12000, 15000]
+    sizes = [500, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
     scalability_results = run_scalability_experiments(
         transactions, sizes, min_support=0.05
     )
