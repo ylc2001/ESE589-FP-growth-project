@@ -35,8 +35,7 @@ def download_dataset(data_dir: str = 'data') -> str:
         print(f"Dataset already exists at {file_path}")
         return file_path
     
-    print(f"Downloading Online Retail dataset from {url}")
-    print("This may take a few minutes...")
+    print(f"Downloading Online Retail dataset from {url} ...")
     
     try:
         urllib.request.urlretrieve(url, file_path)
@@ -74,12 +73,12 @@ def load_and_clean_data(file_path: str) -> pd.DataFrame:
     print("Data Cleaning Steps:")
     print("="*70)
     
-    # Step 1: Remove rows with missing CustomerID
-    initial_rows = len(df)
-    df = df[df['CustomerID'].notna()]
-    removed = initial_rows - len(df)
-    print(f"1. Removed {removed} rows with missing CustomerID")
-    print(f"   Remaining rows: {len(df)}")
+    # # Step 1: Remove rows with missing CustomerID
+    # initial_rows = len(df)
+    # df = df[df['CustomerID'].notna()]
+    # removed = initial_rows - len(df)
+    # print(f"1. Removed {removed} rows with missing CustomerID")
+    # print(f"   Remaining rows: {len(df)}")
     
     # Step 2: Remove rows with missing Description
     initial_rows = len(df)

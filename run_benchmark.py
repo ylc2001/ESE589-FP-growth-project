@@ -44,23 +44,11 @@ def get_data(sample_size=5000):
         return transactions, trans_df, item_stats, "Online Retail"
         
     except Exception as e:
-        print(f"\n⚠ Could not download Online Retail dataset: {e}")
-        print("\nFalling back to synthetic retail data...")
-        
-        from sample_data import get_sample_data
-        
-        transactions, trans_df, item_stats = get_sample_data(sample_size)
-        print("\n✓ Using synthetic retail dataset")
-        return transactions, trans_df, item_stats, "Synthetic"
+            print(f"\n⚠ Could not download Online Retail dataset: {e}")
+            sys.exit(1)  # Exit the program with an error code
 
 
-def main():
-    """Run comprehensive benchmark experiments."""
-    print("\n" + "="*70)
-    print("FP-GROWTH ALGORITHM COMPREHENSIVE BENCHMARK")
-    print("="*70)
-    
-    # Load data
+def main():    
     print("\n[1/4] Loading transaction data...")
     transactions, trans_df, item_stats, data_source = get_data(sample_size=5000)
     
