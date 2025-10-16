@@ -61,7 +61,7 @@ Validates: Basic itemset mining, support counting
 | 0.10    | 35       | 0.246    | ~0.1*       | 500       |
 | 0.15    | 15       | 0.110    | ~0.08*      | 750       |
 
-*Note: Memory values are estimated based on tree structure analysis*
+*Note: Approximate values based on tree structure analysis (may underestimate actual usage)
 
 **Key Findings:**
 - Higher support → fewer patterns (as expected)
@@ -78,7 +78,7 @@ Validates: Basic itemset mining, support counting
 | 3000         | 141      | 0.133    | ~0.18*      | 0.044           |
 | 5000         | 139      | 0.347    | ~0.25*      | 0.069           |
 
-*Note: Memory values are estimated based on tree structure analysis*
+*Note: Approximate values based on tree structure analysis (may underestimate actual usage)
 
 **Key Findings:**
 - Linear time complexity with dataset size
