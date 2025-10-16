@@ -55,11 +55,13 @@ Validates: Basic itemset mining, support counting
 **A. Support Variation (5000 transactions):**
 | Support | Itemsets | Time (s) | Memory (MB) | Min Count |
 |---------|----------|----------|-------------|-----------|
-| 0.01    | 3,947    | 0.959    | ~0.5        | 50        |
-| 0.02    | 1,049    | 0.613    | ~0.3        | 100       |
-| 0.05    | 139      | 0.331    | ~0.2        | 250       |
-| 0.10    | 35       | 0.246    | ~0.1        | 500       |
-| 0.15    | 15       | 0.110    | ~0.08       | 750       |
+| 0.01    | 3,947    | 0.959    | ~0.5*       | 50        |
+| 0.02    | 1,049    | 0.613    | ~0.3*       | 100       |
+| 0.05    | 139      | 0.331    | ~0.2*       | 250       |
+| 0.10    | 35       | 0.246    | ~0.1*       | 500       |
+| 0.15    | 15       | 0.110    | ~0.08*      | 750       |
+
+*Note: Memory values are estimated based on tree structure analysis*
 
 **Key Findings:**
 - Higher support → fewer patterns (as expected)
@@ -70,11 +72,13 @@ Validates: Basic itemset mining, support counting
 **B. Scalability Analysis (0.05 support):**
 | Transactions | Itemsets | Time (s) | Memory (MB) | Time/Trans (ms) |
 |--------------|----------|----------|-------------|-----------------|
-| 500          | 221      | 0.018    | ~0.05       | 0.035           |
-| 1000         | 167      | 0.032    | ~0.08       | 0.032           |
-| 2000         | 148      | 0.078    | ~0.12       | 0.039           |
-| 3000         | 141      | 0.133    | ~0.18       | 0.044           |
-| 5000         | 139      | 0.347    | ~0.25       | 0.069           |
+| 500          | 221      | 0.018    | ~0.05*      | 0.035           |
+| 1000         | 167      | 0.032    | ~0.08*      | 0.032           |
+| 2000         | 148      | 0.078    | ~0.12*      | 0.039           |
+| 3000         | 141      | 0.133    | ~0.18*      | 0.044           |
+| 5000         | 139      | 0.347    | ~0.25*      | 0.069           |
+
+*Note: Memory values are estimated based on tree structure analysis*
 
 **Key Findings:**
 - Linear time complexity with dataset size
