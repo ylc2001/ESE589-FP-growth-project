@@ -191,62 +191,18 @@ def fp_growth(transactions: List[List[str]], min_support: int,
     return patterns
 
 
-def generate_association_rules(patterns: Dict[Tuple[str, ...], int], 
-                               min_confidence: float) -> List[Tuple[Set[str], Set[str], float, float]]:
-    """
-    Generate association rules from frequent patterns.
-    
-    Args:
-        patterns: Dictionary of frequent itemsets and their support
-        min_confidence: Minimum confidence threshold
-    
-    Returns:
-        List of rules as (antecedent, consequent, confidence, support) tuples
-    """
-    rules = []
-    
-    # Only consider patterns with at least 2 items
-    for itemset, support in patterns.items():
-        if len(itemset) < 2:
-            continue
-        
-        itemset_set = set(itemset)
-        
-        # Generate all non-empty subsets as potential antecedents
-        for i in range(1, len(itemset)):
-            from itertools import combinations
-            for antecedent_tuple in combinations(itemset, i):
-                antecedent = set(antecedent_tuple)
-                consequent = itemset_set - antecedent
-                
-                # Calculate confidence
-                antecedent_support = patterns.get(antecedent_tuple, 0)
-                if antecedent_support > 0:
-                    confidence = support / antecedent_support
-                    
-                    if confidence >= min_confidence:
-                        rules.append((antecedent, consequent, confidence, support))
-    
-    return rules
-
-
 def mine_frequent_itemsets(transactions: List[List[str]], 
-                           min_support: float = 0.01,
-                           min_confidence: float = 0.5,
-                           return_rules: bool = False) -> Dict:
+                           min_support: float = 0.01) -> Dict:
     """
-    Main function to mine frequent itemsets and optionally generate association rules.
+    Main function to mine frequent itemsets.
     
     Args:
         transactions: List of transactions (each transaction is a list of items)
         min_support: Minimum support threshold (as fraction of total transactions)
-        min_confidence: Minimum confidence for association rules
-        return_rules: Whether to also generate association rules
     
     Returns:
         Dictionary containing:
         - 'frequent_itemsets': Dict mapping itemsets to support
-        - 'rules': List of association rules (if return_rules=True)
         - 'num_transactions': Total number of transactions
     """
     num_transactions = len(transactions)
@@ -261,12 +217,6 @@ def mine_frequent_itemsets(transactions: List[List[str]],
         'min_support': min_support,
         'min_support_count': min_support_count
     }
-    
-    # Generate association rules if requested
-    if return_rules:
-        rules = generate_association_rules(patterns, min_confidence)
-        result['rules'] = rules
-        result['min_confidence'] = min_confidence
     
     return result
 
@@ -287,14 +237,9 @@ if __name__ == "__main__":
     print(f"Transactions: {transactions}")
     print()
     
-    result = mine_frequent_itemsets(transactions, min_support=0.4, min_confidence=0.6, return_rules=True)
+    result = mine_frequent_itemsets(transactions, min_support=0.4)
     
     print(f"Minimum support: {result['min_support']} ({result['min_support_count']} transactions)")
     print(f"\nFrequent Itemsets ({len(result['frequent_itemsets'])} found):")
     for itemset, support in sorted(result['frequent_itemsets'].items(), key=lambda x: (-len(x[0]), -x[1])):
         print(f"  {set(itemset)}: {support}")
-    
-    if 'rules' in result:
-        print(f"\nAssociation Rules ({len(result['rules'])} found):")
-        for antecedent, consequent, confidence, support in result['rules']:
-            print(f"  {antecedent} => {consequent} (conf: {confidence:.2f}, supp: {support})")

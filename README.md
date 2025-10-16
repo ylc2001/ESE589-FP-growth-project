@@ -8,12 +8,10 @@ The FP-Growth algorithm is an efficient method for frequent pattern mining that:
 - Uses a compressed FP-tree data structure to avoid costly candidate generation
 - Mines frequent itemsets through pattern fragment growth
 - Is significantly faster than the Apriori algorithm for large datasets
-- Can generate association rules from discovered patterns
 
 ## Features
 
 - **Complete FP-Growth Implementation**: Full implementation of the FP-growth algorithm with FP-tree data structure
-- **Association Rule Generation**: Generates association rules with confidence metrics
 - **Data Preprocessing**: Automated preprocessing pipeline for the Online Retail dataset
 - **Comprehensive Validation**: Multiple test cases validating correctness
 - **Performance Benchmarking**: Scalability analysis and performance metrics
@@ -57,27 +55,12 @@ transactions = [
 # Mine frequent itemsets
 result = mine_frequent_itemsets(
     transactions, 
-    min_support=0.4,  # 40% minimum support
-    min_confidence=0.6,  # 60% minimum confidence
-    return_rules=True
+    min_support=0.4  # 40% minimum support
 )
 
 # Display results
 print(f"Found {len(result['frequent_itemsets'])} frequent itemsets")
-print(f"Found {len(result['rules'])} association rules")
 ```
-
-Or run the comprehensive examples script:
-
-```bash
-python examples.py
-```
-
-This demonstrates:
-- Basic usage with small datasets
-- Association rule generation
-- Effect of different parameters
-- Real-world e-commerce scenarios
 
 ### 2. Run Validation Tests
 
@@ -87,12 +70,11 @@ Validate the implementation with comprehensive test cases:
 python validate.py
 ```
 
-This runs 5 test suites:
+This runs 4 test suites:
 - Simple transaction examples
 - Classic textbook examples
 - Edge cases (empty, single item, etc.)
 - Support threshold variations
-- Association rule generation
 
 ### 3. Run Benchmark Experiments
 
@@ -107,7 +89,6 @@ This will:
 - If download fails (no internet), automatically use synthetic retail data
 - Run support variation experiments (0.01 to 0.15)
 - Run scalability experiments (500 to 5000 transactions)
-- Generate association rules
 - Create visualizations and save results
 
 **Note:** The script automatically falls back to synthetic retail data if the Online Retail dataset cannot be downloaded. The synthetic data mimics real retail transactions with realistic product names and shopping patterns.
@@ -115,7 +96,6 @@ This will:
 Results are saved to the `results/` directory:
 - `support_variation_results.json`: Results for different support thresholds
 - `scalability_results.json`: Results for different dataset sizes
-- `association_rules_results.json`: Association rule mining results
 - `support_variation.png`: Visualization of support experiments
 - `scalability.png`: Visualization of scalability experiments
 - `BENCHMARK_REPORT.md`: Comprehensive summary report
@@ -143,9 +123,7 @@ print(f"Found {len(item_stats)} unique items")
 ESE589-FP-growth-project/
 ├── fp_growth.py          # Core FP-growth algorithm implementation
 ├── validate.py           # Validation test suite
-├── examples.py           # Comprehensive usage examples
 ├── preprocess.py         # Data preprocessing for Online Retail dataset
-├── sample_data.py        # Synthetic retail data generator
 ├── benchmark.py          # Benchmark experiment functions
 ├── run_benchmark.py      # Main benchmark script with data fallback
 ├── requirements.txt      # Python package dependencies
@@ -170,21 +148,14 @@ ESE589-FP-growth-project/
 3. **Recursive Mining**: Build conditional FP-trees
 4. **Pattern Growth**: Combine patterns to form larger itemsets
 
-### Association Rules
-
-Rules are generated from frequent itemsets using the confidence metric:
-- **Confidence(A => B)** = Support(A ∪ B) / Support(A)
-- Rules meeting minimum confidence threshold are returned
-
 ## Experimental Results
 
 ### Validation Results
-✓ All 5 validation test suites pass successfully:
+✓ All 4 validation test suites pass successfully:
 - Simple examples with expected patterns
 - Classic textbook examples
 - Edge cases (empty, single transaction, etc.)
 - Multiple support thresholds
-- Association rule generation
 
 ### Benchmark Results (5000 transactions sample)
 
@@ -200,7 +171,6 @@ Rules are generated from frequent itemsets using the confidence metric:
 
 **Top Frequent Patterns:**
 - Most common product combinations identified
-- Association rules with high confidence
 - Real-world shopping patterns discovered
 
 See `results/BENCHMARK_REPORT.md` for detailed experimental analysis.

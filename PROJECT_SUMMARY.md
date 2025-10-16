@@ -13,14 +13,12 @@ This project implements the FP-Growth (Frequent Pattern Growth) algorithm for mi
   - `FPNode` class: Tree node structure
   - `FPTree` class: Compressed tree data structure
   - `fp_growth()` function: Main mining algorithm
-  - `generate_association_rules()` function: Rule generation
   - `mine_frequent_itemsets()` function: High-level API
 
 **Algorithm Features:**
 - Efficient FP-tree construction with node linking
 - Recursive conditional pattern mining
 - Support for variable minimum support thresholds
-- Association rule generation with confidence metrics
 - No candidate generation (unlike Apriori)
 
 ### 2. Experimental Validation ✓
@@ -31,9 +29,8 @@ This project implements the FP-Growth (Frequent Pattern Growth) algorithm for mi
 - Test 2: Classic textbook examples (5 transactions) ✓
 - Test 3: Edge cases (empty, single, identical) ✓
 - Test 4: Multiple support thresholds ✓
-- Test 5: Association rule generation ✓
 
-**Results:** All 5/5 test suites passing
+**Results:** All 4/4 test suites passing
 
 **Small Illustrating Examples:**
 ```
@@ -41,11 +38,6 @@ Example 1 - Grocery Store:
 Transactions: ['bread', 'milk'], ['bread', 'diaper', 'beer', 'eggs'], ...
 Results: 17 frequent itemsets found at 40% support
 Validates: Basic itemset mining, support counting
-
-Example 2 - Market Basket:
-Transactions: ['milk', 'bread', 'butter'], ...
-Results: 11 association rules at 70% confidence
-Validates: Rule generation, confidence calculation
 ```
 
 ### 3. Large Benchmark Results ✓
@@ -87,10 +79,6 @@ Validates: Rule generation, confidence calculation
 - Consistent ~0.03-0.07 ms per transaction
 - Efficient FP-tree compression maintains performance
 
-**C. Association Rules (1000 transactions, 0.05 support, 0.6 confidence):**
-- Frequent itemsets: 167
-- Generated rules demonstrate practical product recommendations
-
 ### 4. Data Preprocessing ✓
 **Status:** Complete with robust pipeline
 
@@ -119,13 +107,11 @@ Validates: Rule generation, confidence calculation
 
 ```
 ESE589-FP-growth-project/
-├── fp_growth.py          # Core FP-growth implementation (284 lines)
-├── validate.py           # Validation test suite (294 lines)
-├── examples.py           # Usage examples (221 lines)
-├── preprocess.py         # Online Retail preprocessing (280 lines)
-├── sample_data.py        # Synthetic data generator (194 lines)
-├── benchmark.py          # Benchmark functions (562 lines)
-├── run_benchmark.py      # Main benchmark script (123 lines)
+├── fp_growth.py          # Core FP-growth implementation (245 lines)
+├── validate.py           # Validation test suite (196 lines)
+├── preprocess.py         # Online Retail preprocessing (275 lines)
+├── benchmark.py          # Benchmark functions (438 lines)
+├── run_benchmark.py      # Main benchmark script (110 lines)
 ├── requirements.txt      # Dependencies (4 packages)
 ├── README.md            # Comprehensive documentation
 ├── .gitignore           # Git ignore rules
@@ -135,11 +121,10 @@ ESE589-FP-growth-project/
     ├── support_variation.png
     ├── scalability.png
     ├── support_variation_results.json
-    ├── scalability_results.json
-    └── association_rules_results.json
+    └── scalability_results.json
 ```
 
-**Total Lines of Code:** ~1,958 lines (excluding comments/blanks)
+**Total Lines of Code:** ~1,264 lines
 
 ## Key Features
 
@@ -195,7 +180,6 @@ print(f"Found {len(result['frequent_itemsets'])} patterns")
 ✓ All validation tests pass
 ✓ Correct frequent itemset mining
 ✓ Accurate support counting
-✓ Proper association rule generation
 ✓ Handles edge cases correctly
 
 ### Performance
@@ -209,7 +193,6 @@ print(f"Found {len(result['frequent_itemsets'])} patterns")
 ✓ Comprehensive validation suite
 ✓ Large-scale benchmarks
 ✓ Data preprocessing pipeline
-✓ Association rule mining
 ✓ Performance visualizations
 ✓ Documentation and examples
 
@@ -218,7 +201,7 @@ print(f"Found {len(result['frequent_itemsets'])} patterns")
 This project successfully implements the FP-Growth algorithm with:
 
 1. **Complete Implementation:** Full FP-tree structure and mining algorithm
-2. **Thorough Validation:** 5 test suites with known expected results
+2. **Thorough Validation:** 4 test suites with known expected results
 3. **Large-Scale Benchmarks:** Experiments on 5000 transaction dataset
 4. **Proper Preprocessing:** Data cleaning and transformation pipeline
 5. **Comprehensive Documentation:** README, examples, and reports
