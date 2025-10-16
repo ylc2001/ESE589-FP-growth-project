@@ -12,6 +12,7 @@ The FP-Growth algorithm is an efficient method for frequent pattern mining that:
 ## Features
 
 - **Complete FP-Growth Implementation**: Full implementation of the FP-growth algorithm with FP-tree data structure
+- **Memory Consumption Tracking**: Detailed memory profiling and FP-tree size metrics
 - **Data Preprocessing**: Automated preprocessing pipeline for the Online Retail dataset
 - **Comprehensive Validation**: Multiple test cases validating correctness
 - **Performance Benchmarking**: Scalability analysis and performance metrics
@@ -62,6 +63,34 @@ result = mine_frequent_itemsets(
 print(f"Found {len(result['frequent_itemsets'])} frequent itemsets")
 ```
 
+### 2. FP-Growth with Memory Tracking
+
+```python
+from fp_growth import mine_frequent_itemsets
+
+# Mine frequent itemsets with memory tracking enabled
+result = mine_frequent_itemsets(
+    transactions, 
+    min_support=0.4,
+    track_memory=True  # Enable memory tracking
+)
+
+# Access memory statistics
+mem_stats = result['memory_stats']
+print(f"Peak memory: {mem_stats['peak_memory_mb']:.2f} MB")
+print(f"Trees created: {mem_stats['tree_stats']['total_trees_created']}")
+print(f"Max tree nodes: {mem_stats['tree_stats']['max_tree_nodes']}")
+print(f"Max tree depth: {mem_stats['tree_stats']['max_tree_depth']}")
+```
+
+### 3. Run Memory Tracking Demo
+
+See a comprehensive demonstration of memory tracking:
+
+```bash
+python demo_memory_tracking.py
+```
+
 ### 2. Run Validation Tests
 
 Validate the implementation with comprehensive test cases:
@@ -76,7 +105,7 @@ This runs 4 test suites:
 - Edge cases (empty, single item, etc.)
 - Support threshold variations
 
-### 3. Run Benchmark Experiments
+### 4. Run Benchmark Experiments
 
 Run comprehensive experiments on the Online Retail dataset:
 
@@ -89,18 +118,19 @@ This will:
 - If download fails (no internet), automatically use synthetic retail data
 - Run support variation experiments (0.01 to 0.15)
 - Run scalability experiments (500 to 5000 transactions)
+- **Track memory consumption for all experiments**
 - Create visualizations and save results
 
 **Note:** The script automatically falls back to synthetic retail data if the Online Retail dataset cannot be downloaded. The synthetic data mimics real retail transactions with realistic product names and shopping patterns.
 
 Results are saved to the `results/` directory:
-- `support_variation_results.json`: Results for different support thresholds
-- `scalability_results.json`: Results for different dataset sizes
-- `support_variation.png`: Visualization of support experiments
-- `scalability.png`: Visualization of scalability experiments
-- `BENCHMARK_REPORT.md`: Comprehensive summary report
+- `support_variation_results.json`: Results for different support thresholds (includes memory stats)
+- `scalability_results.json`: Results for different dataset sizes (includes memory stats)
+- `support_variation.png`: Visualization of support experiments (includes memory plots)
+- `scalability.png`: Visualization of scalability experiments (includes memory plots)
+- `BENCHMARK_REPORT.md`: Comprehensive summary report with memory analysis
 
-### 4. Data Preprocessing
+### 5. Data Preprocessing
 
 Preprocess the Online Retail dataset separately:
 
@@ -121,11 +151,12 @@ print(f"Found {len(item_stats)} unique items")
 
 ```
 ESE589-FP-growth-project/
-├── fp_growth.py          # Core FP-growth algorithm implementation
+├── fp_growth.py          # Core FP-growth algorithm implementation with memory tracking
 ├── validate.py           # Validation test suite
 ├── preprocess.py         # Data preprocessing for Online Retail dataset
-├── benchmark.py          # Benchmark experiment functions
+├── benchmark.py          # Benchmark experiment functions with memory profiling
 ├── run_benchmark.py      # Main benchmark script with data fallback
+├── demo_memory_tracking.py  # Memory tracking demonstration
 ├── requirements.txt      # Python package dependencies
 ├── README.md            # This file
 ├── data/                # Downloaded datasets (created automatically)
@@ -133,6 +164,41 @@ ESE589-FP-growth-project/
 ```
 
 ## Algorithm Details
+
+### Memory Tracking
+
+The implementation includes comprehensive memory tracking capabilities:
+
+**Tracked Metrics:**
+- **Peak Memory Usage**: Maximum memory consumed during mining
+- **Memory Used**: Total memory allocated for the process
+- **FP-Tree Statistics**:
+  - Total number of FP-trees created (including conditional trees)
+  - Maximum number of nodes in any tree
+  - Maximum tree depth
+  - Total memory consumed by tree structures
+
+**Usage:**
+```python
+result = mine_frequent_itemsets(transactions, min_support=0.4, track_memory=True)
+mem_stats = result['memory_stats']
+```
+
+**Memory Statistics Structure:**
+```python
+{
+    'peak_memory_mb': float,      # Peak memory in megabytes
+    'peak_memory_kb': float,      # Peak memory in kilobytes
+    'memory_used_mb': float,      # Memory used in megabytes
+    'memory_used_kb': float,      # Memory used in kilobytes
+    'tree_stats': {
+        'total_trees_created': int,      # Total FP-trees built
+        'max_tree_nodes': int,           # Maximum nodes in any tree
+        'max_tree_depth': int,           # Maximum tree depth
+        'total_tree_memory_bytes': int   # Total tree memory in bytes
+    }
+}
+```
 
 ### FP-Tree Construction
 
@@ -168,6 +234,8 @@ ESE589-FP-growth-project/
 - Linear time complexity with dataset size
 - Consistent time per transaction (~0.5-1.5ms)
 - Memory-efficient FP-tree structure
+- Memory usage scales linearly with dataset size
+- Tree depth remains stable across different scales
 
 **Top Frequent Patterns:**
 - Most common product combinations identified

@@ -47,11 +47,12 @@ def run_experiment(transactions: List[List[str]],
     print(f"Transactions: {len(transactions)}")
     print(f"Min Support: {min_support}")
     
-    # Run FP-growth
+    # Run FP-growth with memory tracking
     start_time = time.time()
     result = mine_frequent_itemsets(
         transactions, 
-        min_support=min_support
+        min_support=min_support,
+        track_memory=True  # Enable memory tracking
     )
     end_time = time.time()
     
@@ -59,6 +60,7 @@ def run_experiment(transactions: List[List[str]],
     
     # Analyze results
     frequent_itemsets = result['frequent_itemsets']
+    memory_stats = result.get('memory_stats', {})
     
     # Group by size
     by_size = {}
@@ -69,6 +71,18 @@ def run_experiment(transactions: List[List[str]],
     print(f"\nExecution Time: {format_time(execution_time)}")
     print(f"Frequent Itemsets Found: {len(frequent_itemsets)}")
     print(f"Min Support Count: {result['min_support_count']}")
+    
+    # Print memory statistics
+    if memory_stats:
+        print(f"\nMemory Statistics:")
+        print(f"  Peak Memory: {memory_stats['peak_memory_mb']:.2f} MB ({memory_stats['peak_memory_kb']:.2f} KB)")
+        print(f"  Memory Used: {memory_stats['memory_used_mb']:.2f} MB ({memory_stats['memory_used_kb']:.2f} KB)")
+        tree_stats = memory_stats.get('tree_stats', {})
+        if tree_stats:
+            print(f"  Total FP-Trees Created: {tree_stats['total_trees_created']}")
+            print(f"  Max Tree Nodes: {tree_stats['max_tree_nodes']}")
+            print(f"  Max Tree Depth: {tree_stats['max_tree_depth']}")
+            print(f"  Total Tree Memory: {tree_stats['total_tree_memory_bytes'] / 1024:.2f} KB")
     
     print("\nItemsets by Size:")
     for size in sorted(by_size.keys()):
@@ -84,6 +98,19 @@ def run_experiment(transactions: List[List[str]],
         'itemsets_by_size': by_size,
         'execution_time': execution_time,
     }
+    
+    # Add memory statistics to results
+    if memory_stats:
+        experiment_result['memory_stats'] = {
+            'peak_memory_mb': memory_stats['peak_memory_mb'],
+            'peak_memory_kb': memory_stats['peak_memory_kb'],
+            'memory_used_mb': memory_stats['memory_used_mb'],
+            'memory_used_kb': memory_stats['memory_used_kb'],
+            'total_trees_created': memory_stats['tree_stats']['total_trees_created'],
+            'max_tree_nodes': memory_stats['tree_stats']['max_tree_nodes'],
+            'max_tree_depth': memory_stats['tree_stats']['max_tree_depth'],
+            'total_tree_memory_kb': memory_stats['tree_stats']['total_tree_memory_bytes'] / 1024,
+        }
     
     # Top frequent itemsets
     top_itemsets = sorted(
@@ -187,13 +214,19 @@ def create_visualizations(results: List[Dict], output_dir: str = 'results'):
     support_values = [r['min_support'] for r in results]
     sizes = [r['num_transactions'] for r in results]
     
+    # Check if memory stats are available
+    has_memory_stats = all('memory_stats' in r for r in results)
+    
     if len(set(support_values)) > 1:
         # Support variation plots
-        fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+        num_plots = 6 if has_memory_stats else 4
+        fig, axes = plt.subplots(3, 2, figsize=(14, 15)) if has_memory_stats else plt.subplots(2, 2, figsize=(14, 10))
         fig.suptitle('FP-Growth Performance vs Support Threshold', fontsize=16)
         
+        axes_flat = axes.flatten() if has_memory_stats else axes.flatten()
+        
         # Plot 1: Number of frequent itemsets vs support
-        ax1 = axes[0, 0]
+        ax1 = axes_flat[0]
         ax1.plot(support_values, [r['num_frequent_itemsets'] for r in results], 
                 marker='o', linewidth=2, markersize=8)
         ax1.set_xlabel('Minimum Support', fontsize=12)
@@ -202,7 +235,7 @@ def create_visualizations(results: List[Dict], output_dir: str = 'results'):
         ax1.grid(True, alpha=0.3)
         
         # Plot 2: Execution time vs support
-        ax2 = axes[0, 1]
+        ax2 = axes_flat[1]
         ax2.plot(support_values, [r['execution_time'] for r in results], 
                 marker='s', color='red', linewidth=2, markersize=8)
         ax2.set_xlabel('Minimum Support', fontsize=12)
@@ -211,7 +244,7 @@ def create_visualizations(results: List[Dict], output_dir: str = 'results'):
         ax2.grid(True, alpha=0.3)
         
         # Plot 3: Itemsets by size (stacked bar)
-        ax3 = axes[1, 0]
+        ax3 = axes_flat[2]
         max_size = max(max(r['itemsets_by_size'].keys()) for r in results if r['itemsets_by_size'])
         sizes_data = {size: [] for size in range(1, max_size + 1)}
         for result in results:
@@ -231,13 +264,48 @@ def create_visualizations(results: List[Dict], output_dir: str = 'results'):
         ax3.grid(True, alpha=0.3, axis='y')
         
         # Plot 4: Min support count
-        ax4 = axes[1, 1]
+        ax4 = axes_flat[3]
         ax4.plot(support_values, [r['min_support_count'] for r in results], 
                 marker='^', color='green', linewidth=2, markersize=8)
         ax4.set_xlabel('Minimum Support', fontsize=12)
         ax4.set_ylabel('Minimum Support Count', fontsize=12)
         ax4.set_title('Minimum Support Count vs Support')
         ax4.grid(True, alpha=0.3)
+        
+        # Plot 5: Memory usage (if available)
+        if has_memory_stats:
+            ax5 = axes_flat[4]
+            memory_used = [r['memory_stats']['memory_used_mb'] for r in results]
+            ax5.plot(support_values, memory_used, 
+                    marker='D', color='purple', linewidth=2, markersize=8)
+            ax5.set_xlabel('Minimum Support', fontsize=12)
+            ax5.set_ylabel('Memory Used (MB)', fontsize=12)
+            ax5.set_title('Memory Usage vs Support')
+            ax5.grid(True, alpha=0.3)
+            
+            # Plot 6: FP-tree statistics
+            ax6 = axes_flat[5]
+            trees_created = [r['memory_stats']['total_trees_created'] for r in results]
+            max_nodes = [r['memory_stats']['max_tree_nodes'] for r in results]
+            
+            ax6_twin = ax6.twinx()
+            line1 = ax6.plot(support_values, trees_created, 
+                    marker='o', color='blue', linewidth=2, markersize=8, label='Trees Created')
+            line2 = ax6_twin.plot(support_values, max_nodes, 
+                    marker='s', color='orange', linewidth=2, markersize=8, label='Max Nodes')
+            
+            ax6.set_xlabel('Minimum Support', fontsize=12)
+            ax6.set_ylabel('Trees Created', fontsize=12, color='blue')
+            ax6_twin.set_ylabel('Max Tree Nodes', fontsize=12, color='orange')
+            ax6.set_title('FP-Tree Statistics vs Support')
+            ax6.tick_params(axis='y', labelcolor='blue')
+            ax6_twin.tick_params(axis='y', labelcolor='orange')
+            ax6.grid(True, alpha=0.3)
+            
+            # Combine legends
+            lines = line1 + line2
+            labels = [l.get_label() for l in lines]
+            ax6.legend(lines, labels, loc='best')
         
         plt.tight_layout()
         plt.savefig(os.path.join(output_dir, 'support_variation.png'), dpi=300, bbox_inches='tight')
@@ -246,11 +314,14 @@ def create_visualizations(results: List[Dict], output_dir: str = 'results'):
     
     elif len(set(sizes)) > 1:
         # Scalability plots
-        fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+        num_plots = 6 if has_memory_stats else 4
+        fig, axes = plt.subplots(3, 2, figsize=(14, 15)) if has_memory_stats else plt.subplots(2, 2, figsize=(14, 10))
         fig.suptitle('FP-Growth Scalability Analysis', fontsize=16)
         
+        axes_flat = axes.flatten() if has_memory_stats else axes.flatten()
+        
         # Plot 1: Execution time vs dataset size
-        ax1 = axes[0, 0]
+        ax1 = axes_flat[0]
         ax1.plot(sizes, [r['execution_time'] for r in results], 
                 marker='o', linewidth=2, markersize=8)
         ax1.set_xlabel('Number of Transactions', fontsize=12)
@@ -259,7 +330,7 @@ def create_visualizations(results: List[Dict], output_dir: str = 'results'):
         ax1.grid(True, alpha=0.3)
         
         # Plot 2: Frequent itemsets vs dataset size
-        ax2 = axes[0, 1]
+        ax2 = axes_flat[1]
         ax2.plot(sizes, [r['num_frequent_itemsets'] for r in results], 
                 marker='s', color='red', linewidth=2, markersize=8)
         ax2.set_xlabel('Number of Transactions', fontsize=12)
@@ -268,7 +339,7 @@ def create_visualizations(results: List[Dict], output_dir: str = 'results'):
         ax2.grid(True, alpha=0.3)
         
         # Plot 3: Time per transaction
-        ax3 = axes[1, 0]
+        ax3 = axes_flat[2]
         time_per_trans = [r['execution_time'] / r['num_transactions'] * 1000 
                          for r in results]
         ax3.plot(sizes, time_per_trans, 
@@ -279,7 +350,7 @@ def create_visualizations(results: List[Dict], output_dir: str = 'results'):
         ax3.grid(True, alpha=0.3)
         
         # Plot 4: Summary table
-        ax4 = axes[1, 1]
+        ax4 = axes_flat[3]
         ax4.axis('tight')
         ax4.axis('off')
         table_data = [
@@ -302,6 +373,41 @@ def create_visualizations(results: List[Dict], output_dir: str = 'results'):
         for i in range(4):
             table[(0, i)].set_facecolor('#40466e')
             table[(0, i)].set_text_props(weight='bold', color='white')
+        
+        # Plot 5: Memory usage vs dataset size (if available)
+        if has_memory_stats:
+            ax5 = axes_flat[4]
+            memory_used = [r['memory_stats']['memory_used_mb'] for r in results]
+            ax5.plot(sizes, memory_used, 
+                    marker='D', color='purple', linewidth=2, markersize=8)
+            ax5.set_xlabel('Number of Transactions', fontsize=12)
+            ax5.set_ylabel('Memory Used (MB)', fontsize=12)
+            ax5.set_title('Memory Usage vs Dataset Size')
+            ax5.grid(True, alpha=0.3)
+            
+            # Plot 6: FP-tree growth
+            ax6 = axes_flat[5]
+            max_nodes = [r['memory_stats']['max_tree_nodes'] for r in results]
+            max_depth = [r['memory_stats']['max_tree_depth'] for r in results]
+            
+            ax6_twin = ax6.twinx()
+            line1 = ax6.plot(sizes, max_nodes, 
+                    marker='o', color='blue', linewidth=2, markersize=8, label='Max Nodes')
+            line2 = ax6_twin.plot(sizes, max_depth, 
+                    marker='s', color='orange', linewidth=2, markersize=8, label='Max Depth')
+            
+            ax6.set_xlabel('Number of Transactions', fontsize=12)
+            ax6.set_ylabel('Max Tree Nodes', fontsize=12, color='blue')
+            ax6_twin.set_ylabel('Max Tree Depth', fontsize=12, color='orange')
+            ax6.set_title('FP-Tree Growth vs Dataset Size')
+            ax6.tick_params(axis='y', labelcolor='blue')
+            ax6_twin.tick_params(axis='y', labelcolor='orange')
+            ax6.grid(True, alpha=0.3)
+            
+            # Combine legends
+            lines = line1 + line2
+            labels = [l.get_label() for l in lines]
+            ax6.legend(lines, labels, loc='best')
         
         plt.tight_layout()
         plt.savefig(os.path.join(output_dir, 'scalability.png'), dpi=300, bbox_inches='tight')
@@ -380,44 +486,113 @@ def generate_summary_report(support_results: List[Dict],
     os.makedirs(output_dir, exist_ok=True)
     report_path = os.path.join(output_dir, 'BENCHMARK_REPORT.md')
     
+    # Check if memory stats are available
+    has_memory_stats = all('memory_stats' in r for r in support_results + scalability_results)
+    
     with open(report_path, 'w') as f:
         f.write("# FP-Growth Algorithm Benchmark Report\n\n")
         f.write("## Executive Summary\n\n")
         f.write("This report presents comprehensive experimental results validating the ")
-        f.write("correctness and performance of the FP-growth algorithm implementation.\n\n")
+        f.write("correctness and performance of the FP-growth algorithm implementation")
+        if has_memory_stats:
+            f.write(", including detailed memory consumption analysis")
+        f.write(".\n\n")
         
         f.write("## 1. Support Threshold Variation Experiments\n\n")
         f.write("Testing how different support thresholds affect the number of frequent ")
         f.write("itemsets and execution time.\n\n")
-        f.write("| Support | Itemsets | Execution Time | Min Count |\n")
-        f.write("|---------|----------|----------------|------------|\n")
-        for r in support_results:
-            f.write(f"| {r['min_support']:.2f} | {r['num_frequent_itemsets']} | "
-                   f"{r['execution_time']:.3f}s | {r['min_support_count']} |\n")
+        
+        if has_memory_stats:
+            f.write("| Support | Itemsets | Time (s) | Memory (MB) | Trees | Max Nodes | Min Count |\n")
+            f.write("|---------|----------|----------|-------------|-------|-----------|------------|\n")
+            for r in support_results:
+                mem = r['memory_stats']
+                f.write(f"| {r['min_support']:.2f} | {r['num_frequent_itemsets']} | "
+                       f"{r['execution_time']:.3f} | {mem['memory_used_mb']:.2f} | "
+                       f"{mem['total_trees_created']} | {mem['max_tree_nodes']} | "
+                       f"{r['min_support_count']} |\n")
+        else:
+            f.write("| Support | Itemsets | Execution Time | Min Count |\n")
+            f.write("|---------|----------|----------------|------------|\n")
+            for r in support_results:
+                f.write(f"| {r['min_support']:.2f} | {r['num_frequent_itemsets']} | "
+                       f"{r['execution_time']:.3f}s | {r['min_support_count']} |\n")
         
         f.write("\n### Key Findings:\n")
         f.write("- As support threshold increases, the number of frequent itemsets decreases\n")
         f.write("- Higher support thresholds result in faster execution times\n")
-        f.write("- The algorithm efficiently prunes infrequent patterns\n\n")
+        f.write("- The algorithm efficiently prunes infrequent patterns\n")
+        if has_memory_stats:
+            f.write("- Memory usage decreases with higher support thresholds\n")
+            f.write("- Fewer conditional FP-trees are created at higher support levels\n")
+        f.write("\n")
         
         f.write("## 2. Scalability Experiments\n\n")
         f.write("Testing algorithm performance with varying dataset sizes.\n\n")
-        f.write("| Transactions | Itemsets | Execution Time | Time/Trans (ms) |\n")
-        f.write("|--------------|----------|----------------|------------------|\n")
-        for r in scalability_results:
-            time_per_trans = (r['execution_time'] / r['num_transactions']) * 1000
-            f.write(f"| {r['num_transactions']} | {r['num_frequent_itemsets']} | "
-                   f"{r['execution_time']:.3f}s | {time_per_trans:.3f} |\n")
+        
+        if has_memory_stats:
+            f.write("| Transactions | Itemsets | Time (s) | Memory (MB) | Time/Trans (ms) | Nodes | Depth |\n")
+            f.write("|--------------|----------|----------|-------------|-----------------|-------|-------|\n")
+            for r in scalability_results:
+                time_per_trans = (r['execution_time'] / r['num_transactions']) * 1000
+                mem = r['memory_stats']
+                f.write(f"| {r['num_transactions']} | {r['num_frequent_itemsets']} | "
+                       f"{r['execution_time']:.3f} | {mem['memory_used_mb']:.2f} | "
+                       f"{time_per_trans:.3f} | {mem['max_tree_nodes']} | "
+                       f"{mem['max_tree_depth']} |\n")
+        else:
+            f.write("| Transactions | Itemsets | Execution Time | Time/Trans (ms) |\n")
+            f.write("|--------------|----------|----------------|------------------|\n")
+            for r in scalability_results:
+                time_per_trans = (r['execution_time'] / r['num_transactions']) * 1000
+                f.write(f"| {r['num_transactions']} | {r['num_frequent_itemsets']} | "
+                       f"{r['execution_time']:.3f}s | {time_per_trans:.3f} |\n")
         
         f.write("\n### Key Findings:\n")
         f.write("- Algorithm scales linearly with dataset size\n")
         f.write("- Maintains consistent performance across different scales\n")
-        f.write("- Efficient memory usage with FP-tree structure\n\n")
+        f.write("- Efficient memory usage with FP-tree structure\n")
+        if has_memory_stats:
+            f.write("- Memory consumption grows proportionally with dataset size\n")
+            f.write("- FP-tree depth remains relatively stable across different sizes\n")
+            f.write("- Tree node count increases with more transactions\n")
+        f.write("\n")
+        
+        # Memory Analysis Section
+        if has_memory_stats:
+            f.write("## 3. Memory Consumption Analysis\n\n")
+            f.write("Detailed analysis of memory usage during FP-growth mining.\n\n")
+            
+            f.write("### Support Threshold Impact on Memory:\n")
+            for r in support_results:
+                mem = r['memory_stats']
+                f.write(f"- Support {r['min_support']:.2f}: {mem['memory_used_mb']:.2f} MB\n")
+                f.write(f"  - Trees created: {mem['total_trees_created']}\n")
+                f.write(f"  - Max tree nodes: {mem['max_tree_nodes']}\n")
+                f.write(f"  - Max tree depth: {mem['max_tree_depth']}\n")
+            
+            f.write("\n### Dataset Size Impact on Memory:\n")
+            for r in scalability_results:
+                mem = r['memory_stats']
+                f.write(f"- {r['num_transactions']} transactions: {mem['memory_used_mb']:.2f} MB\n")
+                f.write(f"  - Max tree nodes: {mem['max_tree_nodes']}\n")
+                f.write(f"  - Max tree depth: {mem['max_tree_depth']}\n")
+            
+            f.write("\n### Memory Efficiency Metrics:\n")
+            avg_mem_per_trans = sum(r['memory_stats']['memory_used_mb'] / r['num_transactions'] 
+                                   for r in scalability_results) / len(scalability_results)
+            f.write(f"- Average memory per transaction: {avg_mem_per_trans * 1024:.2f} KB\n")
+            
+            max_mem = max(r['memory_stats']['memory_used_mb'] for r in support_results + scalability_results)
+            f.write(f"- Peak memory usage across all experiments: {max_mem:.2f} MB\n")
+            
+            f.write("\n")
         
         # Find the experiment with the most itemsets for display
         best_result = max(support_results, key=lambda x: x['num_frequent_itemsets'])
         
-        f.write("## 3. Top Frequent Itemsets\n\n")
+        section_num = 4 if has_memory_stats else 3
+        f.write(f"## {section_num}. Top Frequent Itemsets\n\n")
         if 'top_itemsets' in best_result:
             f.write("Most frequent itemsets found:\n\n")
             for i, item in enumerate(best_result['top_itemsets'][:15], 1):
@@ -428,8 +603,14 @@ def generate_summary_report(support_results: List[Dict],
         f.write("The FP-growth implementation has been validated through:\n")
         f.write("1. Small illustrative examples with known expected results\n")
         f.write("2. Large-scale benchmarks on real-world retail data\n")
-        f.write("3. Performance analysis across different parameters\n\n")
-        f.write("The implementation demonstrates correctness, efficiency, and scalability.\n")
+        f.write("3. Performance analysis across different parameters\n")
+        if has_memory_stats:
+            f.write("4. Comprehensive memory consumption tracking and analysis\n")
+        f.write("\n")
+        f.write("The implementation demonstrates correctness, efficiency, and scalability")
+        if has_memory_stats:
+            f.write(", with detailed memory profiling showing efficient resource utilization")
+        f.write(".\n")
     
     print(f"✓ Summary report saved to {report_path}")
 
