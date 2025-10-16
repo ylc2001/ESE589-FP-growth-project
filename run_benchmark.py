@@ -13,7 +13,6 @@ from benchmark import (
     run_experiment,
     create_visualizations,
     save_results,
-    generate_summary_report
 )
 
 
@@ -78,7 +77,6 @@ def main():
     
     # Generate summary report
     print("\nGenerating summary report...")
-    generate_summary_report(support_results, scalability_results)
     
     print("\n" + "="*70)
     print("✓ BENCHMARK COMPLETED SUCCESSFULLY!")
@@ -88,8 +86,6 @@ def main():
     print("  - scalability_results.json")
     print("  - support_variation.png")
     print("  - scalability.png")
-    print("  - BENCHMARK_REPORT.md")
-    print("\nRun 'cat results/BENCHMARK_REPORT.md' to view the summary report.")
 
 
 if __name__ == "__main__":
